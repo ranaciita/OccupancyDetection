@@ -1,5 +1,11 @@
 import math
 
+# ------------------------------------------------------------
+# this is a basic object tracker that assigns IDs to detected
+# objects (like people) and keeps track of them across frames.
+# ------------------------------------------------------------
+# ------> we dont need this since we're not tracking across frames
+
 
 class Tracker:
     def __init__(self):
@@ -8,7 +14,6 @@ class Tracker:
         # Keep the count of the IDs
         # each time a new object id detected, the count will increase by one
         self.id_count = 0
-
 
     def update(self, objects_rect):
         # Objects boxes and ids

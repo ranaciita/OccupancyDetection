@@ -1,9 +1,15 @@
+
+# --------------------------------------------------------
+# --------- TEST CLASS - USE pmain2.py INSTEAD -----------
+# --------------------------------------------------------
+# class uses yolov10 on a prerecorded video to count people
+# class is outdated
+
 import cv2
 from ultralytics import YOLO
 import pandas as pd
 import cvzone
 import numpy as np
-#from test1 import process_frame
 import os
 from tracker import*
 from datetime import datetime
@@ -18,8 +24,8 @@ def RGB(event, x, y, flags, param):
 cv2.namedWindow('RGB')
 cv2.setMouseCallback('RGB', RGB)
 
-#cap = cv2.VideoCapture('tr1.mp4')
-cap = cv2.VideoCapture('rtsp://root:YoloTracking@169.254.138.29/axis-media/media.amp')
+cap = cv2.VideoCapture('tr1.mp4')
+#cap = cv2.VideoCapture('rtsp://root:YoloTracking@169.254.138.29/axis-media/media.amp')
 
 # Check if video file exists
 if not cap.isOpened():
@@ -32,11 +38,6 @@ data = my_file.read()
 class_list = data.split("\n")
 tracker=Tracker()
 count = 0
-
-# Make the detection line longer and more horizontal
-# Old area: [(324, 313), (283, 374), (854, 392), (864, 322)]
-# New longer line across most of the frame width
-#area = [(100, 350), (50, 400), (950, 400), (950, 350)]
 
 # Detection area: a single wide horizontal line (thin rectangle) covering the whole frame width
 # Adjust y1 and y2 to set the vertical position and thickness of the line
@@ -127,10 +128,7 @@ while True:
                 cvzone.putTextRect(frame, f'{id}', (x3, y3), 1, 1)
                 cv2.rectangle(frame, (x3, y3), (x4, y4), (0, 255, 0), 2)
                 
-    
-
-           
-
+                
     cv2.polylines(frame, [np.array(area, np.int32)], True, (0, 255, 0), 2)
     
     # Display counting information on the frame

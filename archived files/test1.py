@@ -1,6 +1,10 @@
 import cv2
 import numpy as np
 
+# ------------------------------------------------------------
+# test class that handles trafic light detection
+# ------------------------------------------------------------
+
 def process_frame(frame):
     """
     Process frame to detect red color (traffic light detection)
