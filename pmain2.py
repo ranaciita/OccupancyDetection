@@ -3,6 +3,9 @@ from ultralytics import YOLO
 import cv2 # used for video/image processing and showing frames
 import cvzone # for showing information on the frames
 import pandas as pd # for easier handling the data results from YOLO
+import file_save_handler
+import time
+from datetime import datetime
 
 # ------------------------------------------------------------
 # ---------------------- 1. Setting up -----------------------
@@ -16,7 +19,7 @@ model = YOLO("yolo11m.pt")
 # "YoloTracking" = password
 # /axis-media/media.amp = axis fixed path
 IP = "169.254.41.207"
-CAM_URL = "rtsp://root:YoloTracking@{IP}/axis-media/media.amp"
+CAM_URL = f"rtsp://root:YoloTracking@{IP}/axis-media/media.amp"
 
 # load the COCO classes + save in an array
 # (the file coco.txt contains different classes that YOLO can detect)
@@ -30,8 +33,27 @@ MAX_AREA = float('inf')
 ASPECT_RATIO_MIN = 0.15
 ASPECT_RATIO_MAX = 10.0
 
-# var used to count frames
+# frame resolution
+FRAME_WIDTH = 1020
+FRAME_HEIGHT = 600
+
+# var used to count frames and ID
 frame_count = 0
+frame_id = 1
+
+# saving files using file_save_handler
+logClusterID = datetime.now().strftime("ID_%Y%m%d_%H%M%S_%f")
+fsh = file_save_handler.file_save_handler()
+fsh.create_new_folder(f"Logs_{logClusterID}")
+
+fsh.add_log_to_txt(f"Log Cluster: {logClusterID}")
+fsh.add_log_to_txt("------------------------------------------------")
+fsh.add_log_to_txt("SETTINGS:")
+fsh.add_log_to_txt("Minimum Confidence: " + str(MIN_CONFIDENCE))
+fsh.add_log_to_txt("Minimum Area: " + str(MIN_AREA))
+fsh.add_log_to_txt("Aspect Ratio Range: " + str(ASPECT_RATIO_MIN) + " - " + str(ASPECT_RATIO_MAX))
+fsh.add_log_to_txt("Frame Resolution: " + str(FRAME_HEIGHT) + " x " + str(FRAME_WIDTH))
+fsh.add_log_to_txt("------------------------------------------------")
 
 # ------------------------------------------------------------
 # ---------------- 2. Processing the stream ------------------
@@ -43,6 +65,18 @@ for results in model.predict(CAM_URL, stream=True, conf=0.15, iou=0.45, verbose=
     
     # increment frame count
     frame_count += 1
+
+    # only process every 150th frame, otherwise continue to next iteration
+    if frame_count % 150 != 0:
+        continue
+    
+    # increment the id
+    frame_id += 1
+
+    # for the log:
+    # record start time of processing this frame
+    frame_start_time = time.time()
+    timestamp_start = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
     # get a copy of the actual/original frame image from the stream:
     frame = results.orig_img.copy()
@@ -110,10 +144,28 @@ for results in model.predict(CAM_URL, stream=True, conf=0.15, iou=0.45, verbose=
     # display total people count + frame number on the top-left corner
     cvzone.putTextRect(frame, f'Total People: {people_count}', (20, 50), 2, 2, colorR=(0, 255, 0))
     cvzone.putTextRect(frame, f'Frame: {frame_count}', (20, 100), 1, 1, colorR=(255, 0, 0))
+    # display frame ID (corresponding to the log ID) on the image
+    cvzone.putTextRect(frame, f'ID: {frame_id}', (20, 150), 1, 1, colorR=(255, 255, 0))
+
+    # calculate total frame processing time
+    frame_end_time = time.time()
+    timestamp_end = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    process_time = round(frame_end_time - frame_start_time, 3)
 
     # resize the frame + open a window to show the stream 
-    frame = cv2.resize(frame, (1020, 600))
+    frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
     cv2.imshow("RTSP Camera", frame)
+
+    # log info to text file
+    log_line = (
+        f"ID: {frame_id} | frame: {frame_count} | start: {timestamp_start} | "
+        f"end: {timestamp_end} | process: {process_time:.3f}s | people detected: {people_count}"
+    )
+    fsh.add_log_to_txt(log_line)
+
+    # save the frame image
+    image_name = f"{frame_id}.jpg"
+    fsh.add_image_log(frame, image_name)
 
     # break loop if q is pressed
     if cv2.waitKey(1) & 0xFF == ord("q"):
