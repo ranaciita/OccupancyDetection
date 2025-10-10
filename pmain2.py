@@ -44,7 +44,7 @@ frame_id = 1
 # saving files using file_save_handler
 logClusterID = datetime.now().strftime("ID_%Y%m%d_%H%M%S_%f")
 fsh = file_save_handler.file_save_handler()
-fsh.create_new_folder(f"Logs_{logClusterID}")
+fsh.create_new_folder(logClusterID)
 
 fsh.add_log_to_txt(f"Log Cluster: {logClusterID}")
 fsh.add_log_to_txt("------------------------------------------------")
