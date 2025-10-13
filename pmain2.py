@@ -18,7 +18,7 @@ model = YOLO("yolo11m.pt")
 # "root" = username
 # "YoloTracking" = password
 # /axis-media/media.amp = axis fixed path
-IP = "169.254.41.207"
+IP = "169.254.41.208"
 CAM_URL = f"rtsp://root:YoloTracking@{IP}/axis-media/media.amp"
 
 # load the COCO classes + save in an array
@@ -39,7 +39,7 @@ FRAME_HEIGHT = 600
 
 # var used to count frames and ID
 frame_count = 0
-frame_id = 1
+frame_id = 0
 
 # saving files using file_save_handler
 logClusterID = datetime.now().strftime("ID_%Y%m%d_%H%M%S_%f")
@@ -67,7 +67,7 @@ for results in model.predict(CAM_URL, stream=True, conf=0.15, iou=0.45, verbose=
     frame_count += 1
 
     # only process every 150th frame, otherwise continue to next iteration
-    if frame_count % 150 != 0:
+    if frame_count % 3 != 0:
         continue
     
     # increment the id
@@ -134,7 +134,7 @@ for results in model.predict(CAM_URL, stream=True, conf=0.15, iou=0.45, verbose=
                 cx = (x1 + x2)//2
                 cy = (y1 + y2)//2
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                cvzone.putTextRect(frame, f'Person {confidence:.2f}', (x1, y1-10), 1, 1)
+                cvzone.putTextRect(frame, f'Person {confidence:.2f}', (x1, y1-10), scale=2, thickness=2)
                 cv2.circle(frame, (cx, cy), 4, (0, 0, 255), -1)
 
 # ------------------------------------------------------------
@@ -142,10 +142,11 @@ for results in model.predict(CAM_URL, stream=True, conf=0.15, iou=0.45, verbose=
 # ------------------------------------------------------------
 
     # display total people count + frame number on the top-left corner
-    cvzone.putTextRect(frame, f'Total People: {people_count}', (20, 50), 2, 2, colorR=(0, 255, 0))
-    cvzone.putTextRect(frame, f'Frame: {frame_count}', (20, 100), 1, 1, colorR=(255, 0, 0))
+    cvzone.putTextRect(frame, f'Total People: {people_count}', (20, 50), scale=3, thickness=3, colorR=(0, 255, 0))
+    cvzone.putTextRect(frame, f'Frame: {frame_count}, ID: {frame_id}', (20, 120), scale=2.5, thickness=2, colorR=(255, 0, 0))
     # display frame ID (corresponding to the log ID) on the image
-    cvzone.putTextRect(frame, f'ID: {frame_id}', (20, 150), 1, 1, colorR=(255, 255, 0))
+    # cvzone.putTextRect(frame, f'ID: {frame_id}', (20, 120), scale=2.5, thickness=2, colorR=(255, 0, 0))
+
 
     # calculate total frame processing time
     frame_end_time = time.time()
