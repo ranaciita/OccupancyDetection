@@ -12,6 +12,7 @@ Connecting the Camera:
   6. Paste the IP address into your web browser.
   7. Log in using:
       Username: root
-      Password: PeopleTracking
+      Password: YoloTracking
+  8. Change IP adress in the code to the ip adress from AXIS utilities.
      
 Once the connection is established, you can run the program.
